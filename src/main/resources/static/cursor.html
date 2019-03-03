@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Arvins Game</title>
+<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/main.css" rel="stylesheet">
+<script src="/webjars/jquery/jquery.min.js"></script>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="/appC.js"></script>
+</head>
+
+<body>
+<canvas id="canvas" width="700" height="700"> Your Browser does not support canvases :( </canvas>
+<script>
+movement = [[0,-1],[0,1],[1,0],[-1,0]];
+keyMove = ["KeyW","KeyS","KeyD","KeyA"];
+id=-1;
+playerX=0;
+playerY=0;
+playerXO=0;
+playerYO=0;
+afk=100
+connect()
+setTimeout(function(){
+	send("-1");
+	},1000);
+health =250;
+healthO=250;
+var missle=[];
+var missleO=[];
+setTimeout(function(){
+if(id==1){
+	playerX=700;
+	playerY=700;
+}
+if(id==0){
+	playerXO=700;
+	playerYO=700;
+}},2000);
+red= "#cc0000";
+blue="#0088cc";
+cnt=0;
+window.onbeforeunload = function () {
+   send(404+" "+id)
+};
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+pi = Math.PI;
+cWidth =canvas.width;
+cHeight=canvas.height;
+document.addEventListener("keydown",keydownHandler);
+document.addEventListener("keyup",keyupHandler);
+canvas.addEventListener("click",clickHandler);
+
+
+function fillRect(color,sx,sy,w,h){
+	ctx.fillStyle = color;
+	ctx.fillRect(sx,sy,w,h);
+}
+ 
+function fillCirc(color,x,y,r){
+	ctx.beginPath();
+	ctx.arc(x,y,r,0,2*pi);
+	ctx.fillStyle = color;
+	ctx.fill();
+}
+function clickHandler(event){
+	afk=100
+	rect = canvas.getBoundingClientRect();
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+	dX=mouseX-playerX;
+	dY=mouseY-playerY;
+	//alert(calcAngleDegrees(dX,dY));
+	if(missle.length<20){
+	missle.push(new Array(calcAngleDegrees(dX,dY),playerX,playerY));
+	send(id +" "+ 3 +" "+calcAngleDegrees(dX,dY)+" "+playerX+" "+playerY);
+	}
+}
+pressed=[false,false,false,false];
+pressedO=[false,false,false,false];
+function boundP(x){
+	if(x>680){
+		x=680;
+	}
+	if(x<20){
+		x=20;
+	}
+	return x;
+}
+
+function keydownHandler(event){
+	key = event.code;
+    event.preventDefault();
+    i=0;
+	for(; i<9; i++){
+		if(keyMove[i] == key){
+        	pressed[i] = true;
+        	break;
+		}
+	}
+	send(id +" "+ 1+" "+parseInt(i));
+}
+
+function keyupHandler(event){
+	afk=100
+	key = event.code;
+	i=0;
+	for(; i<9; i++){
+		if(keyMove[i] == key){
+        	pressed[i] = false;
+        	break;
+		}
+	}
+	send(id+" "+0+" "+parseInt(i));
+}
+
+
+
+function move(){
+	afk=100
+for(i=0; i<4; i++){
+		if(pressed[i]){
+        	playerX+=movement[i][0];
+			playerY+=movement[i][1];
+		}
+	}
+
+
+for(i=0; i<4; i++){
+	if(pressedO[i]){
+		playerXO+=movement[i][0];
+		playerYO+=movement[i][1];
+	}
+}
+//not declaration of variables
+playerX=boundP(playerX);
+playerY=boundP(playerY);
+playerXO=boundP(playerXO);
+playerYO=boundP(playerYO);
+
+ for(var i=0;i<missle.length;i++){
+     var cY=1.5*Math.sin(missle[i][0]);
+     var cX=1.5*Math.cos(missle[i][0]);
+     missle[i][2]+=cY;
+     missle[i][1]+=cX;
+     if((missle[i][1]<-5||missle[i][1]>700)||(missle[i][2]<-5||missle[i][2]>700)){
+    	 removeM(i)
+     }
+ }
+ 
+ for(var i=0;i<missleO.length;i++){
+     var cY=1.5*Math.sin(missleO[i][0]);
+     var cX=1.5*Math.cos(missleO[i][0]);
+     missleO[i][2]+=cY;
+     missleO[i][1]+=cX;
+     if((missleO[i][1]<-5||missleO[i][1]>700)||(missleO[i][2]<-5||missleO[i][2]>700)){
+    	 removeMO(i);
+     }
+ }
+}
+function clear(){
+fillRect("white",0,0,cWidth,cHeight);
+}
+function calcAngleDegrees(x, y) {
+  return Math.atan2(y, x);
+}
+
+
+function fillText(text,color,size,x,y){
+	ctx.font = String(size)+"px Arial"
+	ctx.fillStyle = color
+	ctx.textAlign = "center"
+	ctx.fillText(text,x,y)
+}
+function removeM(i){
+	 missle.splice(i,1);
+}
+function removeMO(i){
+	 missleO.splice(i,1);
+}
+function update(){
+afk--;
+if(afk==0){
+	window.location = "lose.html";
+	clearInterval(intervalthing);
+}
+clear();
+if(cnt>12){
+send(id +" "+ 2+" "+playerX+" "+playerY+" "+health);
+cnt=0;
+}
+cnt++;
+fillCirc(blue,playerX,playerY,20);
+fillCirc(red,playerXO,playerYO,20);
+for(var i=0;i<missle.length;i++){
+	if((missle[i][1]-playerXO)*(missle[i][1]-playerXO)+(missle[i][2]-playerYO)*(missle[i][2]-playerYO)<625){
+		healthO--;
+	}
+	
+   fillCirc(blue,missle[i][1],missle[i][2],5);
+}
+for(var i=0;i<missleO.length;i++){
+	if((missleO[i][1]-playerX)*(missleO[i][1]-playerX)+(missleO[i][2]-playerY)*(missleO[i][2]-playerY)<625){
+		health--;
+	}
+	fillCirc(red,missleO[i][1],missleO[i][2],5);
+}
+if(health<0)
+	health=0;
+if(healthO<0)
+	healthO=0;
+fillText(health,"red",50,100,640);
+fillText(healthO,"blue",50,620,640);
+if(health==0){
+	window.location = "lose.html";
+	clearInterval(intervalthing);
+}
+if(healthO==0){
+	window.location = "win.html";
+	clearInterval(intervalthing);
+}
+move();
+
+}
+ 
+var ONE_FRAME_TIME = 1000 / 240 ;
+var mainloop = function() {
+	update()
+};
+setTimeout(intervalthing=function(){setInterval( mainloop, ONE_FRAME_TIME )},3000);
+</script>
+
+</body>
+</html>

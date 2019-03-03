@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Arvins Game</title>
+<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/main.css" rel="stylesheet">
+<script src="/webjars/jquery/jquery.min.js"></script>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+</head>
+
+<body>
+	<canvas id="canvas" width="800" height="500"> Your Browser does not support canvases :( </canvas>
+	<script>
+		start = true;
+		counter = 3;
+		movement = [ [ 0, -1 ], [ 0, 1 ], [ 1, 0 ], [ -1, 0 ] ];
+		keyMove = [ "KeyW", "KeyS", "ArrowUp", "ArrowDown" ];
+		//up,down
+		pressed = [ false, false ];
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+		pi = Math.PI;
+		var playerX = 400;
+		var playerY = 120;
+		var oX = [];
+		var oY = [];
+		var box = [];
+		g=0.17;
+		box.push(new Array(160, 260, 680, 240));
+		cWidth = canvas.width;
+		cHeight = canvas.height;
+		document.addEventListener("keydown", keydownHandler);
+		document.addEventListener("keyup", keyupHandler);
+		canvas.addEventListener("click", clickHandler);
+
+		function keydownHandler(event) {
+			key = event.code;
+			event.preventDefault();
+			i = 0;
+			for (; i < 4; i++) {
+				if (keyMove[i] == key) {
+					if(pressed[i%2])
+						return;
+					pressed[i % 2] = true;
+					break;
+				}
+			}
+			process(i%2, 1);
+		}
+		function getRandomInt(max) {
+			return Math.floor(Math.random() * Math.floor(max));
+		}
+
+		function keyupHandler(event) {
+			key = event.code;
+			i = 0;
+			for (; i < 4; i++) {
+				if (keyMove[i] == key) {
+					if(!pressed[i%2])
+						return;
+					pressed[i % 2] = false;
+					break;
+				}
+			}
+			process(i%2, 0);
+		}
+		function process(key, upDown) {
+			if (key == 1) {
+				if (upDown == 1) {
+					playerHeight=70;
+					playerY+=70;
+				}else{
+					playerHeight=140;
+					playerY-=70;
+				}
+			}else{
+				if (upDown == 1&&playerY+playerHeight>=255) {
+					playerYs-=8;
+				}
+			}
+		}
+		var playerHeight=140;
+		function clickHandler(event) {
+			rect = canvas.getBoundingClientRect();
+			mouseX = event.clientX;
+			mouseY = event.clientY;
+	//		alert(mouseX + " " + mouseY)
+		}
+		first = true;
+		framesBetween = 600;
+		cnt = 0;
+		playerYs=0;
+		function removeBox(i) {
+			box.splice(i, 1);
+		}
+		function collide(idx){
+			x=playerX;
+			x1=playerX+30;
+			y1=playerY+playerHeight;
+			y=playerY;
+			xo=box[idx][0];
+			x1o=box[idx][0]+10;
+			y1o=box[idx][1]+playerHeight;
+			yo=box[idx][1];
+			return (x<x1o&&xo<x1&&y<y1o&&yo<y1);
+		}
+		boxS=1;
+		function move() {
+			for (var i = 1; i < box.length; i++) {
+				box[i][0] -= boxS;
+				if (box[i][0] < 150)
+					removeBox(i);
+				while(collide(i)){
+					playerX-=1;
+				}
+			}	
+			
+			if(playerY+playerYs>260-playerHeight){
+				playerYs=0;
+			}else{
+				playerY+=playerYs;
+				playerYs+=g;
+			}
+		}
+		function update() {
+			if (start) {
+				if (counter > 0) {
+					clear()
+					fillText(counter, "black", 140, 400, 300)
+				} else {
+					clear()
+					fillRect("red",0,260,160,240)
+					move();
+					first = false;
+					for (var i = 0; i < box.length; i++) {
+						fillRect("black", box[i][0], box[i][1], box[i][2],
+								box[i][3]);
+					}
+					if(playerX<160){
+					fillRect("red", playerX, playerY, 30, playerHeight);
+					window.location = "lose.html";
+					}else{
+					fillRect("green", playerX, playerY, 30, playerHeight);
+					}
+					if (cnt >= framesBetween) {
+							if (framesBetween > 130) {
+								framesBetween *= 0.91;
+								boxS+=0.1;
+							}
+						cnt = 0;
+						x = getRandomInt(2);
+						if (x == 0) {
+							box.push(new Array(900, 160, 10, 100));
+						} else {
+							box.push(new Array(900, 60, 10, 100));
+						}
+
+					}
+					cnt++;
+				}
+			}
+		}
+		if (start) {
+			var timerId = setInterval(function() {
+				counter--;
+				if (counter == 0) {
+					clearInterval(timerId);
+				}
+			}, 1000);
+		}
+		//Don't Change Below this LINE
+		function clear() {
+			fillRect("white", 0, 0, cWidth, cHeight);
+		}
+		function fillText(text, color, size, x, y) {
+			ctx.font = String(size) + "px Arial"
+			ctx.fillStyle = color
+			ctx.textAlign = "center"
+			ctx.fillText(text, x, y)
+		}
+
+		function fillRect(color, sx, sy, w, h) {
+			ctx.fillStyle = color;
+			ctx.fillRect(sx, sy, w, h);
+		}
+
+		function fillCirc(color, x, y, r) {
+			ctx.beginPath();
+			ctx.arc(x, y, r, 0, 2 * pi);
+			ctx.fillStyle = color;
+			ctx.fill();
+		}
+		var ONE_FRAME_TIME = 1000 / 240;
+		var mainloop = function() {
+			update()
+		};
+		setInterval(mainloop, ONE_FRAME_TIME);
+	</script>
+
+</body>
+</html>
