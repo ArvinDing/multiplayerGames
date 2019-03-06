@@ -12,6 +12,7 @@
 <body>
 	<canvas id="canvas" width="550" height="500"> Your Browser does not support canvases :( </canvas>
 	<script>
+	//Will Finish Later
 		start = true;
 		counter = 3;
 		movement = [ [ 0, -1 ], [ 0, 1 ], [ 1, 0 ], [ -1, 0 ] ];
@@ -75,10 +76,21 @@
 		function move() {
 			for(i=0; i<4; i++){
 				if(pressed[i]){
-		        	playerX+=movement[i][0];
-					playerY+=movement[i][1];
+		        	playerX+=2*movement[i][0];
+					playerY+=2*movement[i][1];
 				}
 			}
+			playerX=boundP(playerX);
+			playerY=boundP(playerY);
+		}
+		function boundP(x){
+			if(x>470){
+				x=470;
+			}
+			if(x<30){
+				x=30;
+			}
+			return x;
 		}
 		first=true;
 		function update() {
@@ -119,11 +131,14 @@
 			ctx.fillStyle = color;
 			ctx.fillRect(sx, sy, w, h);
 		}
-
+		green="#229446"
 		function fillCirc(color, x, y, r) {
-			ctx.beginPath();
+			ctx.beginPath();			
+			ctx.strokeStyle = green;
+			ctx.lineWidth = 1;
+			ctx.fillStyle = color;		
 			ctx.arc(x, y, r, 0, 2 * pi);
-			ctx.fillStyle = color;
+			ctx.stroke();
 			ctx.fill();
 		}
 		var ONE_FRAME_TIME = 1000 / 240;

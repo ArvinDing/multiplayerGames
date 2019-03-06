@@ -41,11 +41,11 @@ function handleKey(content) {
 			clearInterval(intervalthing);
 		}
 	} else if (a[0] == "started") {
-		if (id == -1)
-			id = a[1];
+		if (id == -1&&tempId==a[1])
+			id = a[2];
 		start = true;
-		for (var i = 2; i < 1002; i++) {
-			rando[i - 2] = a[i];
+		for (var i = 3; i < 1003; i++) {
+			rando[i - 3] = a[i];
 		}
 		clock();
 	} else if (a[0] == "win") {

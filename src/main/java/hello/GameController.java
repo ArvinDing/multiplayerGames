@@ -130,8 +130,8 @@ public class GameController {
 				for (int i = 0; i < 1000; i++) {
 					temp += " " + ran.nextInt(2);
 				}
-
-				return new UpdatePacket("started" + " " + curr + temp);
+				String tempId=read.nextToken();
+				return new UpdatePacket("started" + " " + tempId  + " " + curr + temp);
 			}
 			return new UpdatePacket("id" + " " + read.nextToken() + " " + curr);
 		} else if (first.equals("404")) {

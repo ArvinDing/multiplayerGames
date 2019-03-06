@@ -18,7 +18,7 @@
 		movement = [ [ 0, -1 ], [ 0, 1 ], [ 1, 0 ], [ -1, 0 ] ];
 		keyMove = [ "KeyW", "KeyS", "ArrowUp", "ArrowDown" ];
 		//up,down
-		afk=1000;
+		afk=20000;
 		pressed = [ false, false ];
 		connect()
 		id = -1
@@ -47,7 +47,7 @@
 		canvas.addEventListener("click", clickHandler);
 
 		function keydownHandler(event) {
-			afk=1000;
+			afk=20000;
 			key = event.code;
 			event.preventDefault();
 			i = 0;
@@ -66,7 +66,7 @@
 		}
 
 		function keyupHandler(event) {
-			afk=1000;
+			afk=20000;
 			key = event.code;
 			i = 0;
 			for (; i < 4; i++) {
@@ -96,7 +96,7 @@
 		}
 		var playerHeight = 140;
 		function clickHandler(event) {
-			afk=1000;
+			afk=20000;
 			rect = canvas.getBoundingClientRect();
 			mouseX = event.clientX;
 			mouseY = event.clientY;
