@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +20,21 @@ import org.springframework.stereotype.Component;
 @Order(1)
 public class FrontRedirectFilter implements Filter {
 	private static Logger logger = LoggerFactory.getLogger(FrontRedirectFilter.class);
+
 	@Override
-	public void destroy() {		
+	public void destroy() {
 	}
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		logger.info(request.getServerName());
-		logger.info(((HttpServletRequest)request).getRequestURL().toString());
-		chain.doFilter(request, response);
+//		logger.info(((HttpServletRequest) request).getRequestURL().toString());
+//		logger.info(request.getServerName());
+		String hostname=request.getServerName().toLowerCase();
+		if (hostname.contains("librarymath")||hostname.startsWith("www."))
+			((HttpServletResponse) response).sendRedirect("https://librarymath.com/");
+		else
+			chain.doFilter(request, response);
 	}
 
 	@Override
